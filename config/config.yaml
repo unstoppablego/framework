@@ -1,0 +1,35 @@
+version: "1"
+db:
+  - user: dbuser
+    passwd: dbpasswd
+    dbname: dbname
+    host: 0.0.0.0
+    port: 13306
+    other: charset=utf8mb4&parseTime=True&loc=Local
+    tag: rw #rw 和 r 是内置tag，rw 代表可读写， r 代表只读，主要用于配置读写分离
+    type: mysql
+  - user: dbuser
+    passwd: dbpasswd
+    dbname: dbname
+    host: 0.0.0.0
+    port: 13306
+    other: charset=utf8mb4&parseTime=True&loc=Local
+    tag: r
+    type: mysql
+aliyunemail:
+  accessKeyID: 123456789
+  accessKeySecret: 987654321
+redis:
+  - addr: localhost:6379
+    passwd: helloworld
+    db: 0 # use default DB
+mq:
+http:
+  port: 1999
+  address: 0.0.0.0
+  SetMaxIdleConns: 10 #SetMaxIdleConns 用于设置连接池中空闲连接的最大数量。 DB
+  SetMaxOpenConns: 100 #SetMaxOpenConns 设置打开数据库连接的最大数量。 DB
+  SetConnMaxLifetime: 24 #SetConnMaxLifetime 设置了连接可复用的最大时间。 DB
+  sessionName: xsession
+  jwt: true
+  doc: true # 用于开启文档功能
