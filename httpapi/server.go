@@ -27,11 +27,13 @@ type ServerProvider struct {
 func (sp *ServerProvider) RunServer(Addr string, xtls *tls.Config) {
 	if sp.server == nil {
 		if len(sp.Middleware) == 0 {
-			var xss XSSMiddleWare
+			// var xss XSSMiddleWare
 			var sqlc SqlInjectMiddleWare
-			// var sessionx SessionMiddleWare
 			sp.Middleware = append(sp.Middleware, sqlc)
-			sp.Middleware = append(sp.Middleware, xss)
+			// sp.Middleware = append(sp.Middleware, xss)
+
+			// var sessionx SessionMiddleWare
+
 			// sp.Middleware = append(sp.Middleware, sessionx)
 		}
 
@@ -261,7 +263,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 		}()
 
 		xurlVals := r.URL.Query()
-		logs.Info(xurlVals)
+		// logs.Info(xurlVals)
 
 		var req reqModel
 		var reqMap = make(map[string]interface{})

@@ -138,3 +138,40 @@ func RunMiddlewareX(d []MiddlewareX, ctx *Context) (Abort bool) {
 func JTWMiddleWarex(w http.ResponseWriter, r *http.Request) {
 
 }
+
+// next func(ctx *Context, query reqModel) (interface{}, error)
+func CustomXSSMiddleWare[reqModel any](next func(ctx *Context, query reqModel) (interface{}, error)) func(ctx *Context, query reqModel) (interface{}, error) {
+
+	ret := func(ctx *Context, query reqModel) (interface{}, error) {
+
+		p := bluemonday.UGCPolicy()
+		body, err := io.ReadAll(ctx.R.Body)
+
+		if err != nil {
+			logs.Error(err)
+			return nil, err
+		}
+
+		if len(body) == 0 {
+			return nil, err
+		}
+
+		logs.Info(string(body))
+
+		sanitizedBody, err := security.XSSFilterJSON(p, string(body))
+		if err != nil {
+			logs.Error("XSSMiddleWarex Sanitized Body Error", err)
+			return nil, err
+		}
+
+		logs.Info(sanitizedBody)
+
+		ctx.R.Body = io.NopCloser(ReusableReader(bytes.NewBuffer([]byte(sanitizedBody))))
+
+		logs.Info("Hello wolrd")
+
+		return next(ctx, query)
+	}
+
+	return ret
+}
