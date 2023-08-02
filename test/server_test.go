@@ -50,15 +50,28 @@ type ReqGet struct {
 
 func TestServer(t *testing.T) {
 	config.ReadConf("../config/")
-	httpapi.Get[ReqGet]("/fuck", func(ctx *httpapi.Context, query ReqGet) (interface{}, error) {
-		// if data, ok := ctx.Session.Get("sessionstart"); ok {
-		// 	// logs.Info(data)
-		// }
-		return query, nil
-	})
-	//httpapi.CustomXSSMiddleWare(
+
+	httpapi.Get[ReqGet]("/fuck", Fuckfunc[ReqGet], true)
+
+	httpapi.Get[ReqGet]("/fuck2", httpapi.CustomXSSMiddleWare[ReqGet](Fuckfunc[ReqGet]), true)
+
+	httpapi.AddFileUpload("/upload")
 
 	httpapi.Provider().RunServer("0.0.0.0:1999", nil)
+}
+
+//go:generate go run ../main.go
+func Fuckfunc[ReqGet any](ctx *httpapi.Context, query ReqGet) (interface{}, error) {
+
+	return query, nil
+}
+
+func Api() {
+	httpapi.Get[ReqGet]("/fuck", func(ctx *httpapi.Context, query ReqGet) (interface{}, error) {
+
+		return nil, nil
+	}, false)
+
 }
 
 func TestCache(t *testing.T) {
@@ -70,5 +83,36 @@ func TestCache(t *testing.T) {
 		logs.Info(xu, ok)
 		time.Sleep(5 * time.Second)
 	}
-
 }
+
+// func UploadFile[reqT any](ctx *httpapi.Context, req reqT) (interface{}, error) {
+// 	logs.Info("Upload File")
+
+// 	if ctx.R.Method == "GET" {
+
+// 	} else {
+// 		ctx.R.ParseMultipartForm(32 << 20)
+// 		file, handler, err := ctx.R.FormFile("file")
+// 		if err != nil {
+// 			fmt.Println(err)
+// 			return 200, err
+// 		}
+// 		defer file.Close()
+// 		var filePath = "./upload/" + time.Now().Format("2006-01-02") + "/"
+// 		if err := os.MkdirAll(filePath, 0666); !os.IsNotExist(err) {
+// 			log.Println(err)
+// 		}
+// 		uuidWithHyphen := uuid.New()
+// 		filesuffix := path.Ext(handler.Filename)
+// 		fileName := uuidWithHyphen.String() + filesuffix
+// 		f, err := os.OpenFile(filePath+fileName, os.O_WRONLY|os.O_CREATE, 0666)
+// 		if err != nil {
+// 			fmt.Println(err)
+// 			return 200, err
+// 		}
+// 		defer f.Close()
+// 		io.Copy(f, file)
+// 		return 200, nil
+// 	}
+// 	return 200, nil
+// }

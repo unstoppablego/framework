@@ -91,13 +91,22 @@ type reusableReader struct {
 }
 
 func ReusableReader(r io.Reader) io.Reader {
-	readBuf := bytes.Buffer{}
-	readBuf.ReadFrom(r) // error handling ignored for brevity
+	// data, err := io.ReadAll(r)
+	// if err != nil {
+	// 	logs.Info(err)
+	// }
+	// readBuf := bytes.NewBuffer(data)
+	// readBuf := bytes.NewReader(data)
+	readBuf := &bytes.Buffer{}
+	n, err := readBuf.ReadFrom(r) // error handling ignored for brevity
+	if err != nil {
+		logs.Info(err, n)
+	}
 	backBuf := bytes.Buffer{}
 
 	return reusableReader{
-		io.TeeReader(&readBuf, &backBuf),
-		&readBuf,
+		io.TeeReader(readBuf, &backBuf),
+		readBuf,
 		&backBuf,
 	}
 }
@@ -115,10 +124,25 @@ func (r reusableReader) reset() {
 }
 
 func RunMiddlewareX(d []MiddlewareX, ctx *Context) (Abort bool) {
+	// lenx := ctx.R.ContentLength
+	// if lenx == 0 {
+	// 	lenx = 4096
+	// }
+	// bodyx := make([]byte, 4086)
+	// for {
+	// 	rrr, err := ctx.R.Body.Read(bodyx)
+	// 	if err != nil {
+	// 		logs.Info(err)
+	// 		break
+	// 	}
+	// 	logs.Info(rrr, err, string(bodyx[0:rrr]))
+	// }
+
+	// body2, err2 := io.ReadAll(rrr)
 
 	ctx.R.Body = io.NopCloser(ReusableReader(ctx.R.Body))
 
-	body, err := ioutil.ReadAll(ctx.R.Body)
+	body, err := io.ReadAll(ctx.R.Body)
 	if err != nil {
 		logs.Info(err)
 	}
