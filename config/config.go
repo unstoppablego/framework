@@ -38,12 +38,14 @@ type RedisConfig struct {
 }
 
 type HttpConfig struct {
-	Port               string
-	Address            string
-	SetMaxIdleConns    int
-	SetMaxOpenConns    int
-	SetConnMaxLifetime int
-	Doc                bool
+	Port                string
+	Address             string
+	SetMaxIdleConns     int
+	SetMaxOpenConns     int
+	SetConnMaxLifetime  int
+	Doc                 bool
+	SessionName         string
+	SqlInjectMiddleWare bool
 }
 
 type AliyunEmailConfig struct {
@@ -52,7 +54,7 @@ type AliyunEmailConfig struct {
 }
 
 type ConfigV1 struct {
-	Version
+	Version     string
 	DB          []DBConfig
 	Aliyunemail AliyunEmailConfig
 	Redis       []RedisConfig
@@ -70,9 +72,9 @@ func ReadConf(Path string) {
 	}
 	logs.Info("Read Config Sucess ")
 	logs.Info(viper.GetString("db.0.user"))
-	var ver Version
-	viper.Unmarshal(&ver)
-	logs.Info(ver.Version)
+	// var ver Version
+	// viper.Unmarshal(&ver)
+	// logs.Info(ver.Version)
 
 	err = viper.Unmarshal(&Cfg)
 	if err != nil {

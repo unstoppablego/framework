@@ -28,12 +28,18 @@ func (sp *ServerProvider) RunServer(Addr string, xtls *tls.Config) {
 	if sp.server == nil {
 		if len(sp.Middleware) == 0 {
 			// var xss XSSMiddleWare
-			var sqlc SqlInjectMiddleWare
-			sp.Middleware = append(sp.Middleware, sqlc)
+			logs.Info(config.Cfg.Http.SessionName)
+			session.InitManager(
+				session.SetCookieName(config.Cfg.Http.SessionName),
+			)
+
+			if config.Cfg.Http.SqlInjectMiddleWare {
+				var sqlc SqlInjectMiddleWare
+				sp.Middleware = append(sp.Middleware, sqlc)
+			}
+
 			// sp.Middleware = append(sp.Middleware, xss)
-
 			// var sessionx SessionMiddleWare
-
 			// sp.Middleware = append(sp.Middleware, sessionx)
 		}
 

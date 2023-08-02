@@ -12,11 +12,14 @@ type SessionMiddleWare struct {
 }
 
 func (x SessionMiddleWare) Handle(w http.ResponseWriter, r *http.Request) (Abort bool) {
+	// session.SetSessionID()
+
 	store, err := session.Start(context.Background(), w, r)
 	if err != nil {
 		fmt.Fprint(w, err)
 		return
 	}
+
 	store.Set("sessionstart", true)
 	err = store.Save()
 	if err != nil {

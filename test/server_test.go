@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
+	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/unstoppablego/framework/cache"
+	"github.com/unstoppablego/framework/config"
 	"github.com/unstoppablego/framework/httpapi"
 	"github.com/unstoppablego/framework/logs"
 )
@@ -47,33 +49,26 @@ type ReqGet struct {
 }
 
 func TestServer(t *testing.T) {
-
-	httpapi.Get[ReqGet]("/fuck", httpapi.CustomXSSMiddleWare(func(ctx *httpapi.Context, query ReqGet) (interface{}, error) {
+	config.ReadConf("../config/")
+	httpapi.Get[ReqGet]("/fuck", func(ctx *httpapi.Context, query ReqGet) (interface{}, error) {
 		// if data, ok := ctx.Session.Get("sessionstart"); ok {
 		// 	// logs.Info(data)
 		// }
 		return query, nil
-	}))
+	})
+	//httpapi.CustomXSSMiddleWare(
 
 	httpapi.Provider().RunServer("0.0.0.0:1999", nil)
 }
 
-func TestServerGin(t *testing.T) {
-	r := gin.Default()
-	r.GET("/fuck", func(c *gin.Context) {
+func TestCache(t *testing.T) {
+	var user User
+	user.Id = 18
+	cache.Set[string, User]("Hello", user, cache.WithExpiration(5*time.Second))
+	for i := 0; i < 30; i++ {
+		xu, ok := cache.Get[string, User]("Hello")
+		logs.Info(xu, ok)
+		time.Sleep(5 * time.Second)
+	}
 
-		logs.Info(c.Query("Id"))
-		logs.Info(c.Query("Hello"))
-		logs.Info(c.Query("world"))
-		var req ReqGet
-		if err := c.ShouldBindQuery(&req); err == nil {
-			c.JSON(200, gin.H{"name": req.Id, "address": req.Hello, "world": req.World})
-		} else {
-			c.JSON(400, gin.H{"error": err.Error()})
-		}
-		// c.JSON(http.StatusOK, gin.H{
-		// 	"message": "pong",
-		// })
-	})
-	r.Run(":1999")
 }

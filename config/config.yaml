@@ -30,8 +30,7 @@ http:
   SetMaxIdleConns: 10 # SetMaxIdleConns 用于设置连接池中空闲连接的最大数量。 DB
   SetMaxOpenConns: 100 # SetMaxOpenConns 设置打开数据库连接的最大数量。 DB
   SetConnMaxLifetime: 24 # SetConnMaxLifetime 设置了连接可复用的最大时间。 DB
-  sessionName: xsession
+  SessionName: xsession
   jwt: true
   doc: true # 用于开启文档功能
-  XSSMiddleWare: false # 如果没有相关需求，建议关闭在benchmark 中非常占用资源
-  SqlInjectMiddleWare: false
+  SqlInjectMiddleWare: true
