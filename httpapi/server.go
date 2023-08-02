@@ -92,7 +92,7 @@ next func(w http.ResponseWriter, r *http.Request, respData []byte, obj reqModel)
 
 enableValidate bool 默认开启
 */
-func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data interface{}, err error)) {
+func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data interface{}, err error), enableCache bool) {
 
 	if next == nil {
 		panic("http: nil handler")
@@ -106,20 +106,35 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 	}
 
 	hxxx := func(w http.ResponseWriter, r *http.Request) {
+		r.Body = io.NopCloser(ReusableReader(r.Body))
+		if enableCache {
+			xbody, err := io.ReadAll(r.Body)
+			if err != nil {
+				logs.Error(err)
+			}
+			mapKey := string(r.URL.RawQuery) + string(xbody)
+			if data, ok := cache.Get[string, []byte](tool.Md5(mapKey)); ok {
+				w.WriteHeader(200)
+				w.Write(data)
+				return
+			}
+		}
+		//init ctx
 		var ctxa Context
 		ctxa.W = w
 		ctxa.R = r
-		// store, err := session.Start(context.Background(), w, r)
-		// if err != nil {
-		// 	fmt.Fprint(w, err)
-		// 	return
-		// }
-		// store.Set("sessionstart", true)
-		// err = store.Save()
-		// if err != nil {
-		// 	fmt.Fprint(w, err)
-		// 	return
-		// }
+		store, err := session.Start(context.Background(), w, r)
+		if err != nil {
+			fmt.Fprint(w, err)
+			return
+		}
+		ctxa.Session = store
+		store.Set("sessionstart", true)
+		err = store.Save()
+		if err != nil {
+			fmt.Fprint(w, err)
+			return
+		}
 
 		if RunMiddlewareX(internalServerProvider.Middleware, &ctxa) {
 			return
@@ -129,15 +144,15 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 		var ResponseCentera ResponseDataProvider
 		ResponseCentera.Code = "40000"
 
-		defer func() {
-			data, err := json.Marshal(ResponseCentera)
-			if err != nil {
-				logs.Error(err)
-				return
-			}
-			w.WriteHeader(200)
-			w.Write(data)
-		}()
+		// defer func() {
+		// 	data, err := json.Marshal(ResponseCentera)
+		// 	if err != nil {
+		// 		logs.Error(err)
+		// 		return
+		// 	}
+		// 	w.WriteHeader(200)
+		// 	w.Write(data)
+		// }()
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -161,6 +176,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 		if err != nil {
 			ResponseCentera.Msg = err.Error()
 			logs.Error(err)
+			RetCode(w, &ResponseCentera)
 			return
 		}
 		if enableValidate {
@@ -168,6 +184,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 			if err != nil {
 				ResponseCentera.Msg = err.Error()
 				logs.Error(err)
+				RetCode(w, &ResponseCentera)
 				return
 			}
 		}
@@ -176,6 +193,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 		if err != nil {
 			ResponseCentera.Msg = err.Error()
 			logs.Error(err)
+			RetCode(w, &ResponseCentera)
 			return
 		}
 
@@ -188,8 +206,26 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 		// rdata := base64.NewEncoding(base64Key).EncodeToString(jsondata)
 		// logs.Info(rdata)
 
+		// ResponseCentera.Code = "200"
+		// ResponseCentera.Data = retdata
+
 		ResponseCentera.Code = "200"
 		ResponseCentera.Data = retdata
+
+		// ret code
+		data, err := json.Marshal(ResponseCentera)
+		if err != nil {
+			logs.Error(err)
+			return
+		}
+		w.WriteHeader(200)
+		w.Write(data)
+
+		if enableCache {
+			mapKey := string(r.URL.RawQuery) + string(body)
+			cache.Set[string, []byte](tool.Md5(mapKey), data, cache.WithExpiration(5*time.Second))
+
+		}
 	}
 
 	//----------api doc -------------
@@ -240,6 +276,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 	}
 
 	hxxx := func(w http.ResponseWriter, r *http.Request) {
+		r.Body = io.NopCloser(ReusableReader(r.Body))
 		// var enableCache bool
 		if enableCache {
 			// xurlVals := r.URL.Query()

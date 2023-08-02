@@ -26,7 +26,7 @@ type XSSMiddleWare struct {
 func (x XSSMiddleWare) Handle(ctx *Context) bool {
 
 	p := bluemonday.UGCPolicy()
-	body, err := ioutil.ReadAll(ctx.R.Body)
+	body, err := io.ReadAll(ctx.R.Body)
 
 	ctx.W.Header().Set("xss", "run")
 	if err != nil {
@@ -140,7 +140,7 @@ func RunMiddlewareX(d []MiddlewareX, ctx *Context) (Abort bool) {
 
 	// body2, err2 := io.ReadAll(rrr)
 
-	ctx.R.Body = io.NopCloser(ReusableReader(ctx.R.Body))
+	// ctx.R.Body = io.NopCloser(ReusableReader(ctx.R.Body))
 
 	body, err := io.ReadAll(ctx.R.Body)
 	if err != nil {

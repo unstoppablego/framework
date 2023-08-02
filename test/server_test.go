@@ -53,7 +53,7 @@ func TestServer(t *testing.T) {
 
 	httpapi.Get[ReqGet]("/fuck", Fuckfunc[ReqGet], true)
 
-	httpapi.Get[ReqGet]("/fuck2", httpapi.CustomXSSMiddleWare[ReqGet](Fuckfunc[ReqGet]), true)
+	httpapi.Post[ReqGet]("/fuck2", httpapi.CustomXSSMiddleWare[ReqGet](Fuckfunc[ReqGet]), true)
 
 	httpapi.AddFileUpload("/upload")
 
