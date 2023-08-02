@@ -66,13 +66,13 @@ func (c *HttpApiRoute) AppendApiDoc(i *postman.Items) {
 	c.doc = append(c.doc, i)
 }
 
-type ResponseCenter struct {
+type ResponseDataProvider struct {
 	Code string
 	Msg  string
 	Data interface{}
 }
 
-func (r *ResponseCenter) IsOk() bool {
+func (r *ResponseDataProvider) IsOk() bool {
 	return r.Code == "200"
 }
 
@@ -81,7 +81,7 @@ func HandleApiWithEncode[reqModel any](mux *HttpApiRoute, path string, next func
 	hxxx := func(w http.ResponseWriter, r *http.Request) {
 		// logs.Info("HTTP API " + r.Method + " " + path)
 		defer tool.HandleRecover()
-		var ResponseCentera ResponseCenter
+		var ResponseCentera ResponseDataProvider
 		ResponseCentera.Code = "40000"
 
 		defer func() {
@@ -206,7 +206,7 @@ func CallEncodeApi[respModel any](url string, postdata []byte, base64key string)
 	}
 	resp.Body.Close()
 
-	var ResponseCentera ResponseCenter
+	var ResponseCentera ResponseDataProvider
 	err = json.Unmarshal(body, &ResponseCentera)
 	if err != nil {
 		logs.Error(err)

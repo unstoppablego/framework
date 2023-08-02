@@ -126,7 +126,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 		}
 
 		defer tool.HandleRecover()
-		var ResponseCentera ResponseCenter
+		var ResponseCentera ResponseDataProvider
 		ResponseCentera.Code = "40000"
 
 		defer func() {
@@ -285,11 +285,12 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 		}
 
 		if RunMiddlewareX(internalServerProvider.Middleware, &ctxa) {
+
 			return
 		}
 
 		defer tool.HandleRecover()
-		var ResponseCentera ResponseCenter
+		var ResponseCentera ResponseDataProvider
 		ResponseCentera.Code = "40000"
 
 		// defer func() {
@@ -339,13 +340,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 		reqdata, err := json.Marshal(reqMap)
 		if err != nil {
 			// ret code
-			data, err := json.Marshal(ResponseCentera)
-			if err != nil {
-				logs.Error(err)
-				return
-			}
-			w.WriteHeader(200)
-			w.Write(data)
+			RetCode(w, &ResponseCentera)
 			return
 		}
 
@@ -355,13 +350,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 			ResponseCentera.Msg = err.Error()
 			logs.Error(err)
 			// ret code
-			data, err := json.Marshal(ResponseCentera)
-			if err != nil {
-				logs.Error(err)
-				return
-			}
-			w.WriteHeader(200)
-			w.Write(data)
+			RetCode(w, &ResponseCentera)
 			return
 		}
 		if enableValidate {
@@ -370,13 +359,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 				ResponseCentera.Msg = err.Error()
 				logs.Error(err)
 				// ret code
-				data, err := json.Marshal(ResponseCentera)
-				if err != nil {
-					logs.Error(err)
-					return
-				}
-				w.WriteHeader(200)
-				w.Write(data)
+				RetCode(w, &ResponseCentera)
 				return
 			}
 		}
@@ -386,13 +369,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 			ResponseCentera.Msg = err.Error()
 			logs.Error(err)
 			// ret code
-			data, err := json.Marshal(ResponseCentera)
-			if err != nil {
-				logs.Error(err)
-				return
-			}
-			w.WriteHeader(200)
-			w.Write(data)
+			RetCode(w, &ResponseCentera)
 			return
 		}
 
@@ -409,6 +386,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 		ResponseCentera.Data = retdata
 
 		// ret code
+
 		data, err := json.Marshal(ResponseCentera)
 		if err != nil {
 			logs.Error(err)
@@ -458,6 +436,16 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 	internalServerProvider.InternalMux.HandleFunc(path, hxxx)
 }
 
+func RetCode(w http.ResponseWriter, ret *ResponseDataProvider) {
+	data, err := json.Marshal(ret)
+	if err != nil {
+		logs.Error(err)
+		return
+	}
+	w.WriteHeader(200)
+	w.Write(data)
+}
+
 type Context struct {
 	Session SesssionStore
 	W       http.ResponseWriter
@@ -471,7 +459,7 @@ func AddFileUpload(path string) {
 
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 
-	var ResponseCentera ResponseCenter
+	var ResponseCentera ResponseDataProvider
 	ResponseCentera.Code = "40000"
 
 	defer func() {
