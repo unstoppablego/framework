@@ -9,25 +9,62 @@ import (
 	"os"
 	"time"
 
-	"github.com/unstoppablego/framework/app"
+	"github.com/unstoppablego/framework/logs"
 )
 
-func Write(rw io.WriteCloser, cmd string) string {
+const (
+	CommandSuccess = "success"
+	CommandFailed  = "failed"
+)
+const (
+	StateSuccess = 1
+	StateFailed  = 0
+	StateRun     = 2
+)
+
+type SSHManager struct {
+	CurCommandIndex string
+	File            string
+}
+
+func NewSSH(File string) *SSHManager {
+
+	return &SSHManager{File: File}
+}
+
+func (s *SSHManager) IsSuccess(data []byte) int {
+
+	if bytes.Contains(data, []byte(s.CurCommandIndex+CommandSuccess)) {
+		return StateSuccess
+	}
+	if bytes.Contains(data, []byte(s.CurCommandIndex+CommandFailed)) {
+		return StateFailed
+	}
+	return StateRun
+}
+
+func (s *SSHManager) Write(rw io.WriteCloser, cmd string) string {
 	var EndEcho = "end" + time.Now().Format(time.RFC3339) + "End"
-	rw.Write([]byte(cmd + " && echo '" + EndEcho + "' \r\n"))
+
+	s.CurCommandIndex = EndEcho
+
+	var SuccessEcho = " && echo " + EndEcho + CommandSuccess
+	var FailedEcho = " || echo" + EndEcho + CommandFailed
+
+	rw.Write([]byte(cmd + SuccessEcho + FailedEcho + "' \r\n"))
+
 	return EndEcho
 }
 
-var forTestLog []byte
-
-func WaitFinish(rr io.Reader, end string, FileName string) error {
+func (s *SSHManager) WaitFinish(rr io.Reader, FileName string) error {
 
 	var xxxa = make([]byte, 4096)
 	fetchError := false
 	for {
 		rl, rerr := rr.Read(xxxa)
+
 		if rerr != nil {
-			app.Log.Info("WaitFinish", rerr)
+			logs.Info("WaitFinish", rerr)
 		}
 
 		if rl > 0 {
@@ -45,10 +82,13 @@ func WaitFinish(rr io.Reader, end string, FileName string) error {
 			fetchError = true
 		}
 
-		if bytes.Contains(xxxa[0:rl], []byte(end)) {
-			fmt.Println("运行结束")
+		if s.IsSuccess(xxxa[0:rl]) == StateSuccess {
+
+			break
+		} else if s.IsSuccess(xxxa[0:rl]) == StateFailed {
 			break
 		}
+
 	}
 	if fetchError {
 		return fmt.Errorf("fetch error")
