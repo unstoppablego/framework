@@ -18,79 +18,27 @@ func Write(rw io.WriteCloser, cmd string) string {
 	return EndEcho
 }
 
-// 用于在测试模式下检测数据的存放
 var forTestLog []byte
 
 func WaitFinish(rr io.Reader, end string, FileName string) error {
 
 	var xxxa = make([]byte, 4096)
-	// var isNeedRerun = false
 	fetchError := false
-	// var success = 0
 	for {
 		rl, rerr := rr.Read(xxxa)
 		if rerr != nil {
 			app.Log.Info("WaitFinish", rerr)
 		}
 
-		// 如果是测试模式
-
 		if rl > 0 {
-			// fmt.Println(string(xxxa[0:rl]))
 			WriteFile(FileName, string(xxxa[0:rl]))
 		}
-
-		//如果是测试模式
-		// if comm.LaunchMode == 2 && rl > 0 {
-		// 	forTestLog = append(forTestLog, xxxa[0:rl]...)
-		// 	var TraceAction *[]comm.ActionTrace
-
-		// 	if comm.CheckMode == 1 {
-		// 		TraceAction = &comm.ActionTraceAlipaySendMode1HaveCart
-		// 	} else if comm.CheckMode == 2 {
-		// 		TraceAction = &comm.ActionTraceAlipaySendMode1NoCart
-		// 	} else if comm.CheckMode == 3 {
-		// 		TraceAction = &comm.ActionTraceAlipaySendMode2HaveCart
-		// 	} else if comm.CheckMode == 4 {
-		// 		TraceAction = &comm.ActionTraceAlipaySendMode2HaveCart
-		// 	}
-
-		// 	var loopinfo = ""
-		// 	var tmpsuccess = 0
-
-		// 	for vi, v := range *TraceAction {
-		// 		if bytes.Contains(forTestLog, []byte(v.Action)) {
-		// 			(*TraceAction)[vi].Success = true
-		// 		}
-
-		// 		if (*TraceAction)[vi].Success {
-		// 			tmpsuccess++
-		// 		}
-		// 		loopinfo += fmt.Sprintf("%s %v ", strings.Replace(strings.Replace(v.Action, "1635769101-", "", -1), "-success", "", -1), v.Success)
-		// 	}
-
-		// 	if tmpsuccess > success {
-		// 		success = tmpsuccess
-		// 		fmt.Println(loopinfo)
-		// 	}
-
-		// 	if success == len(*TraceAction) {
-		// 		loopinfo = "success\n\n" + loopinfo
-		// 		fmt.Println(loopinfo)
-		// 	}
-		// }
 
 		if bytes.Contains(xxxa[0:rl], []byte("Could not get lock /var/lib/dpkg/lock-frontend")) {
 			log.Println("find lock error")
 			time.Sleep(15 * time.Second)
 			return fmt.Errorf("lock error")
 		}
-		//
-		// if bytes.Contains(xxxa[0:rl], []byte("Could not resolve host: hk1.yfwq.org")) {
-		// 	log.Println("find lock error")
-		// 	time.Sleep(15 * time.Second)
-		// 	return fmt.Errorf("lock error")
-		// }
 
 		if bytes.Contains(xxxa[0:rl], []byte("E: Failed to fetch")) {
 			fmt.Println("E: Failed to fetch")
