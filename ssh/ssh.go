@@ -26,6 +26,7 @@ const (
 
 type SSHManager struct {
 	CurCommandIndex string
+	CurCommand      string
 	File            string
 	PrivateKey      []byte
 	w               io.WriteCloser
@@ -71,7 +72,6 @@ func (s *SSHManager) Connect(user string, address string) {
 	}
 
 	logs.Info("SSH Connect Ok")
-	defer client.Close()
 
 	session, err := client.NewSession()
 	if err != nil {
@@ -125,12 +125,16 @@ func (s *SSHManager) Write(cmd string) string {
 	var EndEcho = "end" + time.Now().Format(time.RFC3339) + "End"
 
 	s.CurCommandIndex = EndEcho
+	s.CurCommand = cmd
+	var SuccessEcho = " && echo '" + EndEcho + CommandSuccess + "'"
+	var FailedEcho = " || echo '" + EndEcho + CommandFailed + "'"
 
-	var SuccessEcho = " && echo " + EndEcho + CommandSuccess
-	var FailedEcho = " || echo" + EndEcho + CommandFailed
-
-	logs.Info(cmd + SuccessEcho + FailedEcho)
-	s.w.Write([]byte(cmd + SuccessEcho + FailedEcho + "' \r\n"))
+	// logs.Info(cmd + SuccessEcho + FailedEcho)
+	if _, err := s.w.Write([]byte(cmd + SuccessEcho + FailedEcho + " \r\n")); err != nil {
+		logs.Error(err)
+	} else {
+		// logs.Info(n)
+	}
 
 	return EndEcho
 }
@@ -144,7 +148,7 @@ func (s *SSHManager) WaitFinish() error {
 
 		if rerr != nil {
 			if rerr == io.EOF {
-
+				logs.Info("WaitFinish", rerr)
 			} else {
 				logs.Info("WaitFinish", rerr)
 			}
@@ -166,10 +170,10 @@ func (s *SSHManager) WaitFinish() error {
 		}
 
 		if s.getState(xxxa[0:rl]) == StateSuccess {
-			logs.Info("Command Success")
+			logs.Info("Command Success " + s.CurCommand)
 			break
 		} else if s.getState(xxxa[0:rl]) == StateFailed {
-			logs.Info("Command Error")
+			logs.Info("Command Error " + s.CurCommand)
 			break
 		}
 
@@ -183,7 +187,7 @@ func (s *SSHManager) WaitFinish() error {
 func WriteFile(filePath string, data string) {
 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		fmt.Println("文件打开失败", err)
+		fmt.Println("Open File Failed ", err)
 	}
 
 	defer file.Close()
