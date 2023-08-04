@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/viper"
-	"github.com/unstoppablego/framework/logs"
 )
 
 // 尝试读取数据库信息
@@ -70,8 +69,8 @@ func ReadConf(Path string) {
 	if err != nil {               // Handle errors reading the config file
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
-	logs.Info("Read Config Sucess ")
-	logs.Info(viper.GetString("db.0.user"))
+	// logs.Info("Read Config Sucess ")
+	// logs.Info(viper.GetString("db.0.user"))
 	// var ver Version
 	// viper.Unmarshal(&ver)
 	// logs.Info(ver.Version)
