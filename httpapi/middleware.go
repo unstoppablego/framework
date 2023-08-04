@@ -180,7 +180,7 @@ func CustomXSSMiddleWare[reqModel any](next func(ctx *Context, query reqModel) (
 			return nil, err
 		}
 
-		logs.Info(string(body))
+		// logs.Info(string(body))
 
 		sanitizedBody, err := security.XSSFilterJSON(p, string(body))
 		if err != nil {
@@ -188,11 +188,11 @@ func CustomXSSMiddleWare[reqModel any](next func(ctx *Context, query reqModel) (
 			return nil, err
 		}
 
-		logs.Info(sanitizedBody)
+		// logs.Info(sanitizedBody)
 
 		ctx.R.Body = io.NopCloser(ReusableReader(bytes.NewBuffer([]byte(sanitizedBody))))
 
-		logs.Info("Hello wolrd")
+		// logs.Info("Hello wolrd")
 
 		return next(ctx, query)
 	}
