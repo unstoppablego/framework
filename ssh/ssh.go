@@ -130,6 +130,7 @@ func (s *SSHManager) Write(cmd string) string {
 	var FailedEcho = " || echo '" + EndEcho + CommandFailed + "'"
 
 	// logs.Info(cmd + SuccessEcho + FailedEcho)
+
 	if _, err := s.w.Write([]byte(cmd + SuccessEcho + FailedEcho + " \r\n")); err != nil {
 		logs.Error(err)
 	} else {
@@ -153,7 +154,14 @@ func (s *SSHManager) WaitFinish() error {
 				logs.Info("WaitFinish", rerr)
 			}
 		}
-
+		// logs.Info(s.CurCommand)
+		if len(s.CurCommand) > 3 && s.CurCommand[0:3] == "scp" {
+			logs.Info("scp command")
+			if bytes.Contains(xxxa[0:rl], []byte("Are you sure you want to continue connecting (yes/no)")) {
+				s.w.Write([]byte("yes"))
+				s.Write("\r\n")
+			}
+		}
 		if rl > 0 {
 			WriteFile(s.File, string(xxxa[0:rl]))
 		}
