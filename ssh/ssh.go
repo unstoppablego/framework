@@ -121,6 +121,7 @@ func (s *SSHManager) Write(cmd string) string {
 	var SuccessEcho = " && echo " + EndEcho + CommandSuccess
 	var FailedEcho = " || echo" + EndEcho + CommandFailed
 
+	logs.Info(cmd + SuccessEcho + FailedEcho)
 	s.w.Write([]byte(cmd + SuccessEcho + FailedEcho + "' \r\n"))
 
 	return EndEcho
@@ -134,7 +135,11 @@ func (s *SSHManager) WaitFinish() error {
 		rl, rerr := s.r.Read(xxxa)
 
 		if rerr != nil {
-			logs.Info("WaitFinish", rerr)
+			if rerr == io.EOF {
+
+			} else {
+				logs.Info("WaitFinish", rerr)
+			}
 		}
 
 		if rl > 0 {
@@ -153,8 +158,10 @@ func (s *SSHManager) WaitFinish() error {
 		}
 
 		if s.getState(xxxa[0:rl]) == StateSuccess {
+			logs.Info("Command Success")
 			break
 		} else if s.getState(xxxa[0:rl]) == StateFailed {
+			logs.Info("Command Error")
 			break
 		}
 
