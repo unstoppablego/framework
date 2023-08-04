@@ -32,7 +32,7 @@ func NewSSH(File string) *SSHManager {
 	return &SSHManager{File: File}
 }
 
-func (s *SSHManager) IsSuccess(data []byte) int {
+func (s *SSHManager) getState(data []byte) int {
 
 	if bytes.Contains(data, []byte(s.CurCommandIndex+CommandSuccess)) {
 		return StateSuccess
@@ -82,10 +82,10 @@ func (s *SSHManager) WaitFinish(rr io.Reader, FileName string) error {
 			fetchError = true
 		}
 
-		if s.IsSuccess(xxxa[0:rl]) == StateSuccess {
+		if s.getState(xxxa[0:rl]) == StateSuccess {
 
 			break
-		} else if s.IsSuccess(xxxa[0:rl]) == StateFailed {
+		} else if s.getState(xxxa[0:rl]) == StateFailed {
 			break
 		}
 
