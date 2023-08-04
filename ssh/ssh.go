@@ -32,7 +32,7 @@ type SSHManager struct {
 	r               io.Reader
 }
 
-func NewSSH(File string) *SSHManager {
+func NewSSH(File string, PrivateKey []byte) *SSHManager {
 
 	return &SSHManager{File: File}
 }
