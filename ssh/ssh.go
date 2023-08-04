@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 	"time"
 
 	"github.com/unstoppablego/framework/logs"
+	"golang.org/x/crypto/ssh"
 )
 
 const (
@@ -25,11 +27,79 @@ const (
 type SSHManager struct {
 	CurCommandIndex string
 	File            string
+	PrivateKey      []byte
+	w               io.WriteCloser
+	r               io.Reader
 }
 
 func NewSSH(File string) *SSHManager {
 
 	return &SSHManager{File: File}
+}
+
+/*
+address ip+":22"
+*/
+func (s *SSHManager) Connect(user string, address string) {
+
+	signer, err := ssh.ParsePrivateKey(s.PrivateKey)
+	if err != nil {
+		logs.Error(err)
+	}
+
+	clientConfig := ssh.ClientConfig{
+		User: user,
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+		HostKeyCallback: func(
+			hostname string,
+			remote net.Addr,
+			key ssh.PublicKey) error {
+			// do something in call back function
+			return nil
+		},
+	}
+
+	client, err := ssh.Dial("tcp", address, &clientConfig)
+
+	if err != nil {
+		logs.Error(err)
+		return
+	}
+
+	logs.Info("SSH Connect Ok")
+	defer client.Close()
+
+	session, err := client.NewSession()
+	if err != nil {
+		log.Fatalf("Failed to create session: " + err.Error())
+	}
+	log.Println("Get session OK")
+
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          0,     //打开回显
+		ssh.TTY_OP_ISPEED: 14400, //输入速率 14.4kbaud
+		ssh.TTY_OP_OSPEED: 14400, //输出速率 14.4kbaud
+		ssh.VSTATUS:       1,
+	}
+
+	err = session.RequestPty("xterm", 100, 100, modes)
+
+	if err != nil {
+		logs.Error(err)
+	}
+
+	s.w, err = session.StdinPipe()
+	s.r, err = session.StdoutPipe()
+
+	if err := session.Shell(); err != nil {
+		log.Fatalf("failed to start shell: " + err.Error())
+	}
+
+	if err != nil {
+		logs.Error(err)
+	}
 }
 
 func (s *SSHManager) getState(data []byte) int {
@@ -43,7 +113,7 @@ func (s *SSHManager) getState(data []byte) int {
 	return StateRun
 }
 
-func (s *SSHManager) Write(rw io.WriteCloser, cmd string) string {
+func (s *SSHManager) Write(cmd string) string {
 	var EndEcho = "end" + time.Now().Format(time.RFC3339) + "End"
 
 	s.CurCommandIndex = EndEcho
@@ -51,17 +121,17 @@ func (s *SSHManager) Write(rw io.WriteCloser, cmd string) string {
 	var SuccessEcho = " && echo " + EndEcho + CommandSuccess
 	var FailedEcho = " || echo" + EndEcho + CommandFailed
 
-	rw.Write([]byte(cmd + SuccessEcho + FailedEcho + "' \r\n"))
+	s.w.Write([]byte(cmd + SuccessEcho + FailedEcho + "' \r\n"))
 
 	return EndEcho
 }
 
-func (s *SSHManager) WaitFinish(rr io.Reader, FileName string) error {
+func (s *SSHManager) WaitFinish(FileName string) error {
 
 	var xxxa = make([]byte, 4096)
 	fetchError := false
 	for {
-		rl, rerr := rr.Read(xxxa)
+		rl, rerr := s.r.Read(xxxa)
 
 		if rerr != nil {
 			logs.Info("WaitFinish", rerr)
