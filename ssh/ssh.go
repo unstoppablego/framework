@@ -131,7 +131,7 @@ func (s *SSHManager) Write(cmd string) string {
 
 	// logs.Info(cmd + SuccessEcho + FailedEcho)
 
-	if _, err := s.w.Write([]byte(cmd + SuccessEcho + FailedEcho + " \r\n")); err != nil {
+	if _, err := s.w.Write([]byte("(" + cmd + ")" + SuccessEcho + FailedEcho + " \r\n")); err != nil {
 		logs.Error(err)
 	} else {
 		// logs.Info(n)
