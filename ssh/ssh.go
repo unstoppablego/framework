@@ -31,6 +31,7 @@ type SSHManager struct {
 	w               io.WriteCloser
 	r               io.Reader
 	session         *ssh.Session
+	client          *ssh.Client
 }
 
 func NewSSH(File string, PrivateKey []byte) *SSHManager {
@@ -63,7 +64,7 @@ func (s *SSHManager) Connect(user string, address string) {
 	}
 
 	client, err := ssh.Dial("tcp", address, &clientConfig)
-
+	s.client = client
 	if err != nil {
 		logs.Error(err)
 		return
@@ -102,6 +103,11 @@ func (s *SSHManager) Connect(user string, address string) {
 		logs.Error(err)
 	}
 	s.session = session
+}
+
+func (s *SSHManager) Close() {
+	s.client.Close()
+	s.session.Close()
 }
 
 func (s *SSHManager) getState(data []byte) int {
