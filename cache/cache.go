@@ -7,7 +7,6 @@ import (
 	"time"
 
 	cache2 "github.com/Code-Hex/go-generics-cache"
-	"github.com/unstoppablego/framework/logs"
 )
 
 var cacheMap = make(map[string]any)
@@ -16,8 +15,8 @@ var lockrw sync.RWMutex
 func getMapKey[K comparable, V any]() string {
 	var k K
 	var v V
-	logs.Info(reflect.TypeOf(k).String())
-	logs.Info(reflect.TypeOf(v).String())
+	// logs.Info(reflect.TypeOf(k).String())
+	// logs.Info(reflect.TypeOf(v).String())
 	mapKey := reflect.TypeOf(k).String() + reflect.TypeOf(v).String()
 	return mapKey
 }
