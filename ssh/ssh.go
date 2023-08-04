@@ -34,7 +34,7 @@ type SSHManager struct {
 
 func NewSSH(File string, PrivateKey []byte) *SSHManager {
 
-	return &SSHManager{File: File}
+	return &SSHManager{File: File, PrivateKey: PrivateKey}
 }
 
 /*
@@ -126,7 +126,7 @@ func (s *SSHManager) Write(cmd string) string {
 	return EndEcho
 }
 
-func (s *SSHManager) WaitFinish(FileName string) error {
+func (s *SSHManager) WaitFinish() error {
 
 	var xxxa = make([]byte, 4096)
 	fetchError := false
@@ -138,7 +138,7 @@ func (s *SSHManager) WaitFinish(FileName string) error {
 		}
 
 		if rl > 0 {
-			WriteFile(FileName, string(xxxa[0:rl]))
+			WriteFile(s.File, string(xxxa[0:rl]))
 		}
 
 		if bytes.Contains(xxxa[0:rl], []byte("Could not get lock /var/lib/dpkg/lock-frontend")) {
@@ -153,7 +153,6 @@ func (s *SSHManager) WaitFinish(FileName string) error {
 		}
 
 		if s.getState(xxxa[0:rl]) == StateSuccess {
-
 			break
 		} else if s.getState(xxxa[0:rl]) == StateFailed {
 			break
