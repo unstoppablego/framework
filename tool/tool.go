@@ -663,11 +663,22 @@ func CheckISOCode(keyword string) string {
 	return ""
 }
 
-func InArray[T string | int | int64 | int32 | int16 | int8 | uint | uint8 | uint16 | uint32 | uint64](ary []T, sub T) bool {
+func InSlice[T string | int | int64 | int32 | int16 | int8 | uint | uint8 | uint16 | uint32 | uint64](ary []T, sub T) bool {
 	for _, v := range ary {
 		if v == sub {
 			return true
 		}
 	}
 	return false
+}
+
+func SliceFilter[T any](ary []T, filter func(v T) bool) []T {
+	var ret []T
+	for _, v := range ary {
+		if filter(v) {
+			ret = append(ret, v)
+		}
+
+	}
+	return ret
 }
