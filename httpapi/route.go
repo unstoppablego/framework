@@ -3,6 +3,7 @@ package httpapi
 import (
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -252,4 +253,18 @@ func (ccc *HttpApiRoute) CreateApi() {
 	}
 
 	err = c.Write(file, postman.V200)
+}
+
+func (ccc *HttpApiRoute) CreateApiForHttp(w io.Writer) {
+
+	items := ccc.doc
+	c := postman.CreateCollection("My collection", "My awesome collection")
+	ver := &postman.Variable{Key: "site", Value: "https://www.baidu.com"}
+	c.Variables = append(c.Variables, ver)
+	for _, v := range items {
+
+		c.AddItem(v)
+	}
+
+	c.Write(w, postman.V200)
 }
