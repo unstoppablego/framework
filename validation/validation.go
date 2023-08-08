@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
+
+	"github.com/unstoppablego/framework/logs"
 )
 
 // Name of the struct tag used in example.
@@ -106,7 +109,7 @@ func getValidatorFromTag(tag string) []Validator {
 	// log.Println(args)
 	var va []Validator
 
-	for _, arg := range args {
+	for i, arg := range args {
 		switch arg {
 		case "number":
 			validator := NumberValidator{}
@@ -114,7 +117,19 @@ func getValidatorFromTag(tag string) []Validator {
 			va = append(va, validator)
 		case "string":
 			validator := StringValidator{}
-			fmt.Sscanf(strings.Join(args[1:], ","), "min=%d,max=%d", &validator.Min, &validator.Max)
+			mm := strings.Split(args[i+1], "-")
+			var err error
+			validator.Min, err = strconv.Atoi(mm[0])
+			if err != nil {
+				logs.Error(err)
+				break
+			}
+			validator.Max, err = strconv.Atoi(mm[1])
+			if err != nil {
+				logs.Error(err)
+				break
+			}
+			// fmt.Sscanf(strings.Join(args[1:], "-"), "min=%d,max=%d", &validator.Min, &validator.Max)
 			va = append(va, validator)
 		case "email":
 			va = append(va, EmailValidator{})
