@@ -16,6 +16,7 @@ import (
 	session "github.com/go-session/session/v3"
 	"github.com/google/uuid"
 	"github.com/rbretecher/go-postman-collection"
+	"gorm.io/gorm"
 
 	"github.com/unstoppablego/framework/cache"
 	"github.com/unstoppablego/framework/config"
@@ -487,7 +488,8 @@ type Context struct {
 	Session SesssionStore
 	W       http.ResponseWriter
 	R       *http.Request
-	RawBody []byte //有些时候各种中间件将处理RawBody数据 , 已知 xss 中间件会修改Body
+	RawBody []byte   //有些时候各种中间件将处理RawBody数据 , 已知 xss 中间件会修改Body
+	Tx      *gorm.DB //
 }
 
 func AddFileUpload(path string) {
