@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/unstoppablego/framework/db"
 	"github.com/unstoppablego/framework/logs"
 	"github.com/unstoppablego/framework/security"
 )
@@ -197,5 +198,21 @@ func CustomXSSMiddleWare[reqModel any](next func(ctx *Context, query reqModel) (
 		return next(ctx, query)
 	}
 
+	return ret
+}
+
+func AutoTransaction[reqModel any](next func(ctx *Context, query reqModel) (interface{}, error)) func(ctx *Context, query reqModel) (interface{}, error) {
+
+	ret := func(ctx *Context, query reqModel) (interface{}, error) {
+		ctx.Tx = db.DB().Begin()
+
+		data, err := next(ctx, query)
+		if err != nil {
+			ctx.Tx.Rollback()
+		} else {
+			ctx.Tx.Commit()
+		}
+		return data, err
+	}
 	return ret
 }
