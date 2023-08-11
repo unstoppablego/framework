@@ -20,6 +20,7 @@ import (
 
 	"github.com/unstoppablego/framework/cache"
 	"github.com/unstoppablego/framework/config"
+	"github.com/unstoppablego/framework/db"
 	"github.com/unstoppablego/framework/logs"
 	"github.com/unstoppablego/framework/tool"
 	"github.com/unstoppablego/framework/validation"
@@ -130,6 +131,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 			return
 		}
 		ctxa.Session = store
+		ctxa.Tx = db.DB()
 		store.Set("sessionstart", true)
 		err = store.Save()
 		if err != nil {
@@ -314,6 +316,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 			return
 		}
 		ctxa.Session = store
+		ctxa.Tx = db.DB()
 
 		store.Set("sessionstart", true)
 		err = store.Save()
