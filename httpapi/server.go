@@ -109,6 +109,17 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 
 	hxxx := func(w http.ResponseWriter, r *http.Request) {
 		r.Body = io.NopCloser(ReusableReader(r.Body))
+
+		if config.Cfg.Http.CrossDomain == "all" {
+			w.Header().Set("Access-Control-Allow-Credentials", "true") //前端js也需要开启跨域请求
+			w.Header().Set("Access-Control-Allow-Origin", "*")         //来源网站
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
+		} else if config.Cfg.Http.CrossDomain != "false" {
+			w.Header().Set("Access-Control-Allow-Credentials", "true")                 //前端js也需要开启跨域请求
+			w.Header().Set("Access-Control-Allow-Origin", config.Cfg.Http.CrossDomain) //来源网站
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
+		}
+
 		if enableCache {
 			xbody, err := io.ReadAll(r.Body)
 			if err != nil {
@@ -121,6 +132,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 				return
 			}
 		}
+
 		//init ctx
 		var ctxa Context
 		ctxa.W = w
@@ -279,6 +291,16 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 	}
 
 	hxxx := func(w http.ResponseWriter, r *http.Request) {
+
+		if config.Cfg.Http.CrossDomain == "all" {
+			w.Header().Set("Access-Control-Allow-Credentials", "true") //前端js也需要开启跨域请求
+			w.Header().Set("Access-Control-Allow-Origin", "*")         //来源网站
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
+		} else if config.Cfg.Http.CrossDomain != "false" {
+			w.Header().Set("Access-Control-Allow-Credentials", "true")                 //前端js也需要开启跨域请求
+			w.Header().Set("Access-Control-Allow-Origin", config.Cfg.Http.CrossDomain) //来源网站
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
+		}
 		r.Body = io.NopCloser(ReusableReader(r.Body))
 		// var enableCache bool
 		if enableCache {

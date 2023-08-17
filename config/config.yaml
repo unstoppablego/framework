@@ -34,3 +34,4 @@ http:
   jwt: true
   doc: true # 用于开启文档功能
   SqlInjectMiddleWare: true
+  crossDomain: all

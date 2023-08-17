@@ -45,6 +45,7 @@ type HttpConfig struct {
 	Doc                 bool
 	SessionName         string
 	SqlInjectMiddleWare bool
+	CrossDomain         string
 }
 
 type AliyunEmailConfig struct {
