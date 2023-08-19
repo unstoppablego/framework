@@ -40,6 +40,8 @@ func (sp *ServerProvider) RunServer(Addr string, xtls *tls.Config) {
 			logs.Info(config.Cfg.Http.SessionName)
 			session.InitManager(
 				session.SetCookieName(config.Cfg.Http.SessionName),
+				session.SetEnableSIDInHTTPHeader(true),
+				session.SetSessionNameInHTTPHeader(""),
 			)
 
 			if config.Cfg.Http.SqlInjectMiddleWare {
@@ -149,8 +151,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 		var ctxa Context
 		ctxa.W = w
 		ctxa.R = r
-		session.SetEnableSIDInHTTPHeader(true)
-		session.SetSessionNameInHTTPHeader("")
+
 		store, err := session.Start(context.Background(), w, r)
 		if err != nil {
 			fmt.Fprint(w, err)
@@ -359,8 +360,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 		var ctxa Context
 		ctxa.W = w
 		ctxa.R = r
-		session.SetEnableSIDInHTTPHeader(true)
-		session.SetSessionNameInHTTPHeader("")
+
 		store, err := session.Start(context.Background(), w, r)
 		if err != nil {
 			fmt.Fprint(w, err)
