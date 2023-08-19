@@ -117,7 +117,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 			if err != nil {
 				logs.Error(err)
 			}
-			crosmain := xdomain.Scheme + "://" + xdomain.Host + xdomain.Port()
+			crosmain := xdomain.Scheme + "://" + xdomain.Host
 			logs.Info(crosmain)
 			w.Header().Set("Access-Control-Allow-Credentials", "true") //前端js也需要开启跨域请求
 			w.Header().Set("Access-Control-Allow-Origin", crosmain)    //来源网站
@@ -309,7 +309,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 			if err != nil {
 				logs.Error(err)
 			}
-			crosmain := xdomain.Scheme + "://" + xdomain.Host + xdomain.Port()
+			crosmain := xdomain.Scheme + "://" + xdomain.Host
 			logs.Info(crosmain)
 			w.Header().Set("Access-Control-Allow-Credentials", "true") //前端js也需要开启跨域请求
 			w.Header().Set("Access-Control-Allow-Origin", crosmain)    //来源网站
