@@ -128,6 +128,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
 		}
 		if r.Method == http.MethodOptions {
+			w.WriteHeader(200)
 			return
 		}
 
@@ -321,6 +322,7 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
 		}
 		if r.Method == http.MethodOptions {
+			w.WriteHeader(200)
 			return
 		}
 
