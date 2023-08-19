@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"reflect"
@@ -111,9 +112,15 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 		r.Body = io.NopCloser(ReusableReader(r.Body))
 
 		if config.Cfg.Http.CrossDomain == "all" {
-			logs.Info(r.Host)
+
+			xdomain, err := url.Parse(r.Referer())
+			if err != nil {
+				logs.Error(err)
+			}
+			crosmain := xdomain.Scheme + "://" + xdomain.Host + xdomain.Port()
+			logs.Info(crosmain)
 			w.Header().Set("Access-Control-Allow-Credentials", "true") //前端js也需要开启跨域请求
-			w.Header().Set("Access-Control-Allow-Origin", r.Host)      //来源网站
+			w.Header().Set("Access-Control-Allow-Origin", crosmain)    //来源网站
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
 		} else if config.Cfg.Http.CrossDomain != "false" {
 			w.Header().Set("Access-Control-Allow-Credentials", "true")                 //前端js也需要开启跨域请求
@@ -298,8 +305,14 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 
 		if config.Cfg.Http.CrossDomain == "all" {
 			logs.Info(r.Host)
+			xdomain, err := url.Parse(r.Referer())
+			if err != nil {
+				logs.Error(err)
+			}
+			crosmain := xdomain.Scheme + "://" + xdomain.Host + xdomain.Port()
+			logs.Info(crosmain)
 			w.Header().Set("Access-Control-Allow-Credentials", "true") //前端js也需要开启跨域请求
-			w.Header().Set("Access-Control-Allow-Origin", r.Host)      //来源网站
+			w.Header().Set("Access-Control-Allow-Origin", crosmain)    //来源网站
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
 
 		} else if config.Cfg.Http.CrossDomain != "false" {
