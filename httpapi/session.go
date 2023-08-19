@@ -13,7 +13,7 @@ type SessionMiddleWare struct {
 
 func (x SessionMiddleWare) Handle(w http.ResponseWriter, r *http.Request) (Abort bool) {
 	// session.SetSessionID()
-
+	session.SetEnableSIDInHTTPHeader(true)
 	store, err := session.Start(context.Background(), w, r)
 	if err != nil {
 		fmt.Fprint(w, err)
