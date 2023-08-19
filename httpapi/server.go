@@ -119,6 +119,9 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 			w.Header().Set("Access-Control-Allow-Origin", config.Cfg.Http.CrossDomain) //来源网站
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
 		}
+		if r.Method == http.MethodOptions {
+			return
+		}
 
 		if enableCache {
 			xbody, err := io.ReadAll(r.Body)
@@ -301,6 +304,10 @@ func Get[reqModel any](path string, next func(ctx *Context, query reqModel) (int
 			w.Header().Set("Access-Control-Allow-Origin", config.Cfg.Http.CrossDomain) //来源网站
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials")
 		}
+		if r.Method == http.MethodOptions {
+			return
+		}
+
 		r.Body = io.NopCloser(ReusableReader(r.Body))
 		// var enableCache bool
 		if enableCache {
