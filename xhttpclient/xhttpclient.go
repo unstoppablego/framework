@@ -1,4 +1,4 @@
-package mhttp
+package xhttpclient
 
 import (
 	"bufio"
