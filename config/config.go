@@ -27,7 +27,7 @@ type DBConfig struct {
 }
 
 func (dc *DBConfig) DSN() string {
-	return dc.User + ":" + dc.Passwd + "@tcp(" + dc.Host + ":" + "3306" + ")/" + dc.Dbname + "?" + dc.Other
+	return dc.User + ":" + dc.Passwd + "@tcp(" + dc.Host + ":" + dc.Port + ")/" + dc.Dbname + "?" + dc.Other
 }
 
 type RedisConfig struct {
