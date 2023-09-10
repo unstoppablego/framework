@@ -2,9 +2,11 @@ package httpapi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/unstoppablego/framework/db"
@@ -204,7 +206,21 @@ func CustomXSSMiddleWare[reqModel any](next func(ctx *Context, query reqModel) (
 func AutoTransaction[reqModel any](next func(ctx *Context, query reqModel) (interface{}, error)) func(ctx *Context, query reqModel) (interface{}, error) {
 
 	ret := func(ctx *Context, query reqModel) (interface{}, error) {
+		var isBegin bool
+		defer func() {
+			r := recover()
+			if r != nil {
+				if isBegin {
+					ctx.Tx.Rollback()
+				}
+				logs.Error(r)
+				var buf [4096]byte
+				n := runtime.Stack(buf[:], false)
+				fmt.Println(string(buf[:n]))
+			}
+		}()
 		ctx.Tx = db.DB().Begin()
+		isBegin = true
 
 		data, err := next(ctx, query)
 		if err != nil {
