@@ -742,11 +742,11 @@ func EventStream[reqModel any](path string, next func(ctx *Context, req reqModel
 			}
 		}
 
-		retdata, err := next(&ctxa, xm, w)
+		_, err = next(&ctxa, xm, w)
 		if err != nil {
-			ResponseCentera.Msg = err.Error()
+			// ResponseCentera.Msg = err.Error()
 			logs.Error(err)
-			RetCode(w, &ResponseCentera)
+			// RetCode(w, &ResponseCentera)
 			return
 		}
 
@@ -762,17 +762,17 @@ func EventStream[reqModel any](path string, next func(ctx *Context, req reqModel
 		// ResponseCentera.Code = "200"
 		// ResponseCentera.Data = retdata
 
-		ResponseCentera.Code = "200"
-		ResponseCentera.Data = retdata
+		// ResponseCentera.Code = "200"
+		// ResponseCentera.Data = retdata
 
 		// ret code
-		data, err := json.Marshal(ResponseCentera)
-		if err != nil {
-			logs.Error(err)
-			return
-		}
-		w.WriteHeader(200)
-		w.Write(data)
+		// data, err := json.Marshal(ResponseCentera)
+		// if err != nil {
+		// 	logs.Error(err)
+		// 	return
+		// }
+		// w.WriteHeader(200)
+		// w.Write(data)
 
 	}
 
