@@ -649,7 +649,9 @@ func EventStream[reqModel any](path string, next func(ctx *Context, req reqModel
 			crosmain := xdomain.Scheme + "://" + xdomain.Host
 			logs.Info(crosmain)
 			w.Header().Set("Access-Control-Allow-Credentials", "true") //前端js也需要开启跨域请求
-			w.Header().Set("Access-Control-Allow-Origin", crosmain)    //来源网站
+			if crosmain != "://" {
+				w.Header().Set("Access-Control-Allow-Origin", crosmain) //来源网站
+			}
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials, "+config.Cfg.Http.SessionName)
 			w.Header().Set("Access-Control-Expose-Headers", config.Cfg.Http.SessionName)
 		} else if config.Cfg.Http.CrossDomain != "false" {
