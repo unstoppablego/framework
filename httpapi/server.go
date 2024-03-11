@@ -601,3 +601,194 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		ResponseCentera.Code = "200"
 	}
 }
+
+//Create Event stream API
+/*
+Post 参数定义如下 不区分POST GET 等相关问题
+
+path string
+
+next func(w http.ResponseWriter, r *http.Request, respData []byte, obj reqModel) (data interface{}, err error)
+
+enableValidate bool 默认开启
+*/
+func EventStream[reqModel any](path string, next func(ctx *Context, req reqModel, w http.ResponseWriter) (data interface{}, err error)) {
+
+	if next == nil {
+		panic("http: nil handler")
+	}
+
+	var enableValidate = true
+
+	if internalServerProvider == nil {
+		internalServerProvider = &ServerProvider{}
+		internalServerProvider.AddMux(New())
+	}
+
+	hxxx := func(w http.ResponseWriter, r *http.Request) {
+
+		_, ok := w.(http.Flusher)
+		if !ok {
+			http.Error(w, "SSE not supported", http.StatusInternalServerError)
+			return
+		} else {
+			logs.Info("SSE supported Yes")
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.Header().Set("Cache-Control", "no-cache")
+			w.Header().Set("Connection", "keep-alive")
+		}
+
+		r.Body = io.NopCloser(ReusableReader(r.Body))
+
+		if config.Cfg.Http.CrossDomain == "all" {
+
+			xdomain, err := url.Parse(r.Referer())
+			if err != nil {
+				logs.Error(err)
+			}
+			crosmain := xdomain.Scheme + "://" + xdomain.Host
+			logs.Info(crosmain)
+			w.Header().Set("Access-Control-Allow-Credentials", "true") //前端js也需要开启跨域请求
+			w.Header().Set("Access-Control-Allow-Origin", crosmain)    //来源网站
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials, "+config.Cfg.Http.SessionName)
+			w.Header().Set("Access-Control-Expose-Headers", config.Cfg.Http.SessionName)
+		} else if config.Cfg.Http.CrossDomain != "false" {
+			w.Header().Set("Access-Control-Allow-Credentials", "true")                 //前端js也需要开启跨域请求
+			w.Header().Set("Access-Control-Allow-Origin", config.Cfg.Http.CrossDomain) //来源网站
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, access-control-allow-origin, access-control-allow-headers, withCredentials, "+config.Cfg.Http.SessionName)
+			w.Header().Set("Access-Control-Expose-Headers", config.Cfg.Http.SessionName)
+		} else {
+			w.Header().Set("Access-Control-Expose-Headers", config.Cfg.Http.SessionName)
+		}
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(200)
+			return
+		}
+
+		// if enableCache {
+		// 	xbody, err := io.ReadAll(r.Body)
+		// 	if err != nil {
+		// 		logs.Error(err)
+		// 	}
+		// 	mapKey := string(r.URL.RawQuery) + string(xbody)
+		// 	if data, ok := cache.Get[string, []byte](tool.Md5(mapKey)); ok {
+		// 		w.WriteHeader(200)
+		// 		w.Write(data)
+		// 		return
+		// 	}
+		// }
+
+		//init ctx
+		var ctxa Context
+		ctxa.W = w
+		ctxa.R = r
+
+		store, err := session.Start(context.Background(), w, r)
+		if err != nil {
+			fmt.Fprint(w, err)
+			return
+		}
+		ctxa.Session = store
+		ctxa.Tx = db.DB()
+		store.Set("sessionstart", true)
+		err = store.Save()
+		if err != nil {
+			fmt.Fprint(w, err)
+			return
+		}
+
+		if RunMiddlewareX(internalServerProvider.Middleware, &ctxa) {
+			return
+		}
+
+		defer tool.HandleRecover()
+		var ResponseCentera ResponseDataProvider
+		ResponseCentera.Code = "40000"
+
+		// defer func() {
+		// 	data, err := json.Marshal(ResponseCentera)
+		// 	if err != nil {
+		// 		logs.Error(err)
+		// 		return
+		// 	}
+		// 	w.WriteHeader(200)
+		// 	w.Write(data)
+		// }()
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			logs.Error(err)
+			return
+		}
+
+		// logs.Info(string(body))
+
+		// data, err := base64.NewEncoding(base64Key).DecodeString(string(body))
+		// if err != nil {
+		// 	logs.Error(err)
+		// 	return
+		// }
+
+		// logs.Info(string(data))
+		// data := body
+
+		var xm reqModel
+		err = json.Unmarshal(body, &xm)
+		if err != nil {
+			ResponseCentera.Msg = err.Error()
+			logs.Error(err)
+			RetCode(w, &ResponseCentera)
+			return
+		}
+		if enableValidate {
+			err = validation.ValidateStruct(xm)
+			if err != nil {
+				ResponseCentera.Msg = err.Error()
+				logs.Error(err)
+				RetCode(w, &ResponseCentera)
+				return
+			}
+		}
+
+		retdata, err := next(&ctxa, xm, w)
+		if err != nil {
+			ResponseCentera.Msg = err.Error()
+			logs.Error(err)
+			RetCode(w, &ResponseCentera)
+			return
+		}
+
+		// jsondata, err := json.Marshal(retdata)
+		// if err != nil {
+		// 	logs.Error(err)
+		// 	return
+		// }
+
+		// rdata := base64.NewEncoding(base64Key).EncodeToString(jsondata)
+		// logs.Info(rdata)
+
+		// ResponseCentera.Code = "200"
+		// ResponseCentera.Data = retdata
+
+		ResponseCentera.Code = "200"
+		ResponseCentera.Data = retdata
+
+		// ret code
+		data, err := json.Marshal(ResponseCentera)
+		if err != nil {
+			logs.Error(err)
+			return
+		}
+		w.WriteHeader(200)
+		w.Write(data)
+
+		// if enableCache {
+		// 	mapKey := string(r.URL.RawQuery) + string(body)
+		// 	cache.Set[string, []byte](tool.Md5(mapKey), data, cache.WithExpiration(5*time.Second))
+
+		// }
+	}
+
+	internalServerProvider.InternalMux.HandleFunc(path, hxxx)
+}
