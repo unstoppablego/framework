@@ -666,19 +666,6 @@ func EventStream[reqModel any](path string, next func(ctx *Context, req reqModel
 			return
 		}
 
-		// if enableCache {
-		// 	xbody, err := io.ReadAll(r.Body)
-		// 	if err != nil {
-		// 		logs.Error(err)
-		// 	}
-		// 	mapKey := string(r.URL.RawQuery) + string(xbody)
-		// 	if data, ok := cache.Get[string, []byte](tool.Md5(mapKey)); ok {
-		// 		w.WriteHeader(200)
-		// 		w.Write(data)
-		// 		return
-		// 	}
-		// }
-
 		//init ctx
 		var ctxa Context
 		ctxa.W = w
@@ -734,20 +721,22 @@ func EventStream[reqModel any](path string, next func(ctx *Context, req reqModel
 		// data := body
 
 		var xm reqModel
-		err = json.Unmarshal(body, &xm)
-		if err != nil {
-			ResponseCentera.Msg = err.Error()
-			logs.Error(err)
-			RetCode(w, &ResponseCentera)
-			return
-		}
-		if enableValidate {
-			err = validation.ValidateStruct(xm)
+		if len(body) > 0 {
+			err = json.Unmarshal(body, &xm)
 			if err != nil {
 				ResponseCentera.Msg = err.Error()
 				logs.Error(err)
 				RetCode(w, &ResponseCentera)
 				return
+			}
+			if enableValidate {
+				err = validation.ValidateStruct(xm)
+				if err != nil {
+					ResponseCentera.Msg = err.Error()
+					logs.Error(err)
+					RetCode(w, &ResponseCentera)
+					return
+				}
 			}
 		}
 
@@ -783,11 +772,6 @@ func EventStream[reqModel any](path string, next func(ctx *Context, req reqModel
 		w.WriteHeader(200)
 		w.Write(data)
 
-		// if enableCache {
-		// 	mapKey := string(r.URL.RawQuery) + string(body)
-		// 	cache.Set[string, []byte](tool.Md5(mapKey), data, cache.WithExpiration(5*time.Second))
-
-		// }
 	}
 
 	internalServerProvider.InternalMux.HandleFunc(path, hxxx)
