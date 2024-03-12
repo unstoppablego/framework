@@ -558,6 +558,8 @@ func AddFileUpload(path string) {
 	internalServerProvider.InternalMux.HandleFunc(path, UploadFile)
 }
 
+var UploadFilePath = "."
+
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 
 	var ResponseCentera ResponseDataProvider
@@ -584,7 +586,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer file.Close()
-		var filePath = "./upload/" + time.Now().Format("2006-01-02") + "/"
+		var filePath = UploadFilePath + "/upload/" + time.Now().Format("2006-01-02") + "/"
 		if err := os.MkdirAll(filePath, 0666); !os.IsNotExist(err) {
 			log.Println(err)
 		}
