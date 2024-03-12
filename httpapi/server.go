@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"net/url"
@@ -559,6 +560,7 @@ func AddFileUpload(path string) {
 }
 
 var UploadFilePath = "."
+var UploadFilePermission fs.FileMode = 0777
 
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 
@@ -587,13 +589,13 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 		var filePath = UploadFilePath + "/upload/" + time.Now().Format("2006-01-02") + "/"
-		if err := os.MkdirAll(filePath, 0666); !os.IsNotExist(err) {
+		if err := os.MkdirAll(filePath, UploadFilePermission); !os.IsNotExist(err) {
 			log.Println(err)
 		}
 		uuidWithHyphen := uuid.New()
 		filesuffix := path.Ext(handler.Filename)
 		fileName := uuidWithHyphen.String() + filesuffix
-		f, err := os.OpenFile(filePath+fileName, os.O_WRONLY|os.O_CREATE, 0666)
+		f, err := os.OpenFile(filePath+fileName, os.O_WRONLY|os.O_CREATE, UploadFilePermission)
 		if err != nil {
 			fmt.Println(err)
 			return
