@@ -13,6 +13,7 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"strings"
 	"time"
 
 	session "github.com/go-session/session/v3"
@@ -636,8 +637,14 @@ func EventStream[reqModel any](path string, next func(ctx *Context, req reqModel
 			http.Error(w, "SSE not supported", http.StatusInternalServerError)
 			return
 		} else {
-			logs.Info("SSE supported Yes")
-			w.Header().Set("Content-Type", "text/event-stream")
+
+			ContentType := r.Header.Get("Accept")
+			if strings.Contains(ContentType, "text/event-stream") {
+				logs.Info("SSE supported Yes")
+				ContentType = "text/event-stream"
+			}
+			logs.Info(ContentType)
+			w.Header().Set("Content-Type", ContentType)
 			w.Header().Set("Cache-Control", "no-cache")
 			w.Header().Set("Connection", "keep-alive")
 		}
