@@ -65,14 +65,21 @@ func (x XSSMiddleWare) Name() string {
 type SqlInjectMiddleWare struct {
 }
 
+var SkipSqlInjectUrl []string
+
 func (x SqlInjectMiddleWare) Handle(ctx *Context) bool {
+	for _, v := range SkipSqlInjectUrl {
+		if v == ctx.R.URL.String() {
+			return false
+		}
+	}
 
 	body, err := ioutil.ReadAll(ctx.R.Body)
 	if err != nil {
 		return true
 	}
 
-	logs.Info(ctx.R.URL)
+	// logs.Info(ctx.R.URL)
 
 	if !security.SqlInjectCheck(body, ctx.R.URL.RawQuery) {
 		return true
