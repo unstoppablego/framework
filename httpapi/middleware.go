@@ -72,6 +72,8 @@ func (x SqlInjectMiddleWare) Handle(ctx *Context) bool {
 		return true
 	}
 
+	logs.Info(ctx.R.URL)
+
 	if !security.SqlInjectCheck(body, ctx.R.URL.RawQuery) {
 		return true
 	}
