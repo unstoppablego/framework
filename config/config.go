@@ -59,6 +59,7 @@ type ConfigV1 struct {
 	Aliyunemail AliyunEmailConfig
 	Redis       []RedisConfig
 	Http        HttpConfig
+	Custom      map[string]string
 }
 
 func ReadConf(Path string) {

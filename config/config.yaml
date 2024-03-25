@@ -35,3 +35,7 @@ http:
   doc: true # 用于开启文档功能
   SqlInjectMiddleWare: true
   crossDomain: all
+custom:
+  key1: "value1"
+  key2: "value2"
+  key3: "value3"
