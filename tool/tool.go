@@ -432,6 +432,11 @@ func Md5(str string) string {
 	return fmt.Sprintf("%x", md5.Sum(data))
 }
 
+func Md5b(str []byte) string {
+	// data := []byte(str)
+	return fmt.Sprintf("%x", md5.Sum(str))
+}
+
 // 查询国家编码是否规范用,本质上没啥用
 func CheckISOCode(keyword string) string {
 	// ISO 3166-1
