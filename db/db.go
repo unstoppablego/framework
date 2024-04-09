@@ -34,8 +34,8 @@ func DB() *gorm.DB {
 
 	defer tool.HandleRecover()
 	dblock.Lock()
-	defer dblock.Unlock()
 	if dbInstance == nil {
+		dblock.Unlock()
 		NewDB()
 	}
 
