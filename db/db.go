@@ -33,7 +33,8 @@ func (e *SException) Error() string {
 func DB() *gorm.DB {
 
 	defer tool.HandleRecover()
-
+	dblock.Lock()
+	defer dblock.Unlock()
 	if dbInstance == nil {
 		NewDB()
 	}
@@ -46,6 +47,7 @@ func DB() *gorm.DB {
 	if err := sqlDB.Ping(); err != nil {
 		panic(NewSException(err.Error(), 10004))
 	}
+
 	return dbInstance
 }
 
