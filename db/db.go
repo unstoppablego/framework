@@ -37,6 +37,8 @@ func DB() *gorm.DB {
 	if dbInstance == nil {
 		dblock.Unlock()
 		NewDB()
+	} else {
+		dblock.Unlock()
 	}
 
 	sqlDB, err := dbInstance.DB()
