@@ -36,7 +36,7 @@ http:
   SqlInjectMiddleWare: true
   crossDomain: all
   uploadDir: /tmp
-  readUploadUrl: /tmp
+  readUploadUrl: /tmp/
 custom:
   key1: "value1"
   key2: "value2"

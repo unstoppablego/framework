@@ -165,6 +165,9 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		fileName := md5sum + filesuffix
 		copyFilePath := filePath + fileName
 		copyFileSrcName := handler.Filename
+
+		logs.Info(filePath + fileName)
+
 		f, err := os.OpenFile(filePath+fileName, os.O_WRONLY|os.O_CREATE, UploadFilePermission)
 		if err != nil {
 			logs.Error(err)
@@ -224,7 +227,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		ResponseCentera.Code = "200"
 		var BookRespa BookResp
 		BookRespa.Name = copyFileSrcName
-		BookRespa.Url = config.Cfg.Custom["filedomain"] + config.Cfg.Http.ReadUploadUrl + "/" + timePath + fileName
+		BookRespa.Url = config.Cfg.Custom["filedomain"] + config.Cfg.Http.ReadUploadUrl + "" + timePath + fileName
 		ResponseCentera.Data = BookRespa
 
 		// } else {
