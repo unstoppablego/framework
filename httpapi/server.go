@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-session/redis/v3"
 	session "github.com/go-session/session/v3"
 	"github.com/google/uuid"
 	"github.com/rbretecher/go-postman-collection"
@@ -41,6 +42,11 @@ func (sp *ServerProvider) RunServer(Addr string, xtls *tls.Config) {
 			// var xss XSSMiddleWare
 			logs.Info(config.Cfg.Http.SessionName)
 			session.InitManager(
+				session.SetStore(redis.NewRedisStore(&redis.Options{
+					Addr:     config.Cfg.Redis[0].Addr,
+					DB:       config.Cfg.Redis[0].DB,
+					Password: config.Cfg.Redis[0].Password,
+				})),
 				session.SetCookieName(config.Cfg.Http.SessionName),
 				session.SetEnableSIDInHTTPHeader(true),
 				session.SetSessionNameInHTTPHeader(""),
@@ -163,6 +169,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 			fmt.Fprint(w, err)
 			return
 		}
+
 		ctxa.Session = store
 		ctxa.Tx = db.DB()
 		store.Set("sessionstart", true)
@@ -549,7 +556,7 @@ func RetCode(w http.ResponseWriter, ret *ResponseDataProvider) {
 }
 
 type Context struct {
-	Session SesssionStore
+	Session session.Store
 	W       http.ResponseWriter
 	R       *http.Request
 	RawBody []byte   //有些时候各种中间件将处理RawBody数据 , 已知 xss 中间件会修改Body
