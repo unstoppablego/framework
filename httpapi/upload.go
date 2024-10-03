@@ -2,7 +2,6 @@ package httpapi
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
@@ -10,7 +9,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -22,7 +20,8 @@ import (
 var UploadFilePath = config.Cfg.Http.UploadDir
 var UploadFilePermission fs.FileMode = 0777
 
-// 用于替换匹配路劲
+// 去读url path 通常和 上传的 path 不同一个 且由于 net/http 匹配机制 所以这个路径通常为 /readupfile/
+// 分为2部分 第一部分 需要能够注入 权限鉴定  第二部分需要能够 在上传完成后 执行后续动作
 func RespUpload(urlPath string) func(w http.ResponseWriter, r *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +29,7 @@ func RespUpload(urlPath string) func(w http.ResponseWriter, r *http.Request) {
 		// parts := strings.Split(r.URL.Path, "/")
 		getpath = strings.Replace(getpath, urlPath, "", -1)
 
-		filePatha := UploadFilePath + "/upload" + getpath
+		filePatha := UploadFilePath + "/upload/" + getpath
 		logs.Info(filePatha)
 		filename := filepath.Base(filePatha)
 		// 打开文件
@@ -131,8 +130,8 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Expose-Headers", config.Cfg.Http.SessionName)
 
 		r.ParseMultipartForm(32 << 20)
-		id := r.FormValue("ID")
-		fmt.Println("ID:", id)
+		// id := r.FormValue("ID")
+		// fmt.Println("ID:", id)
 
 		// 获取上传的文件
 		// file, _, err := r.FormFile("file")
@@ -140,7 +139,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		file, handler, err := r.FormFile("file")
 		logs.Info()
 		if err != nil {
-			fmt.Println(err)
+			logs.Error(err)
 			return
 		}
 		defer file.Close()
@@ -151,7 +150,10 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		md5sum := tool.Md5b(md5src)
 
 		timePath := time.Now().Format("2006-01-02") + "/"
-		var filePath = config.Cfg.Custom["uploadfilepath"] + "/upload/" + timePath
+		var filePath = config.Cfg.Http.UploadDir + "/upload/" + timePath
+
+		logs.Error(filePath)
+
 		if err := os.MkdirAll(filePath, UploadFilePermission); !os.IsNotExist(err) {
 			logs.Error(err)
 			return
@@ -182,11 +184,11 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		// 		}
 		// 	}
 		// }
-		kid, err := strconv.Atoi(id)
-		if err != nil {
-			logs.Error(err)
-		}
-		logs.Info(md5sum, kid)
+		// kid, err := strconv.Atoi(id)
+		// if err != nil {
+		// 	logs.Error(err)
+		// }
+		logs.Info(md5sum)
 		// var uf model.Uploadfile
 		// db.DB()
 		// uf := model.GetUploadfileByPK_md5(md5sum, Uid, kid, db.DB())
