@@ -21,3 +21,14 @@
 go.work
 *.log
 go-stress-testing-linux
+test/id_rsa_test
+test/id_rsa_test.pub
+test/key
+test/benchmark_test.go
+main.go
+rsakey.pub
+rsakey
+
+test/validate_test.go
+test/test.pub
+cross.go

@@ -10,6 +10,7 @@ import (
 	"github.com/unstoppablego/framework/config"
 	"github.com/unstoppablego/framework/httpapi"
 	"github.com/unstoppablego/framework/logs"
+	"github.com/unstoppablego/framework/tool"
 )
 
 type User struct {
@@ -116,3 +117,12 @@ func TestCache(t *testing.T) {
 // 	}
 // 	return 200, nil
 // }
+
+func TestCert(t *testing.T) {
+	tool.Ca()
+	tool.CreateSSH_KEY()
+	// tool.GenerateRsaKey(true)
+}
+
+// 0YzUnNUzPN8qbR6FaTK62oi75weJRzNRwOcbpkRbEIHP5rR+parum1MmvOAYvYkJ7jyrz5sDuBlOg1TDO6hIs8xbV8meF79ZbdXed6ezn52ze2PdhPyzWEevK9eQLMRxRUYqM9nThclxPOuPU8lASZdvnEc1z3QZmy4i5xUKh/uyM8eofojDbQF9Db16sf4x4QOF0NZfKcte87V2mRWTIDEfJysmRyanMYSQdDnSIbKlfwok89fVESo3Ypf7C7xfgTpaleYLCEAaJdumc+bjmvdr48cxUIBto0o70spY5Or9Dw8u+kFyTkcm+j3B6hFi3f8g9dADaAfOQ9TQTviK+vO7jPqECTRtkaI4F2uXPwuIAcoupQ0KPYxgyqXVaABRsiy7r4kxKI+k1SKkfzrjfBmOi3zXoJp4V4jcl4CEXBre+TL8X2VScw8B+YBj9jFQsOI4xdcW/UoBkbb9leLAzufCuieseqOKZvWvcgr6YN1g46GcNkmQrRhjOzrQv/Pmyy/5vDfVi7AUrKvK81A8qOAPDlnD4nHdeCqu2Wuvc4E8ioz1D4qCzJX2hjSyX12Abb9rR6DB+3W1DSIoDznC2A9PNSourRHczUbri5hQpMcMjZOPzAnEBQTP55hzc82pfphReB0Zzy6VgkexLC5D7wn9YR6yL9mamSzLzudA6cU=
+// ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQS++ncv7DDapxbX+GBDw3hkXG0J5HoxDJIJcri5wWwkQOVK+OoCWsiOigRdn2xvWfObvvdQiWcvP7hvVTiVs+tgxx0FRxHiQZir24D3YuoYnhxKSkArxBdzmUkcw5TB72dR2OufIc5MxsddHNGE4lGi9fbTniZIvGd6zFLNL/7Vn41gX1dXVJnRNd8bf8giSxDIKiTz7GIccuMKy9l6uhoDAwV4iXAxRmuioSVFyQQfWDaHVCZ8DIy9ghrckZ2jQXOzobz874C1/7LlaFOQlsClQPU8cYS5YGQV3BU01UGusreSLpydklE8IvDtLDfr2bsFF0Dkl+uFM38EIEy0Um1sJ51TzCzZkWpr+WKonGzLFpEkCw1vuow258H/ZaBpq25gpsxcoFv5Xx6wwjBUjQRcWOfQhmRC840jjcJO+OgCbtaEg8L6xraCvcXageJluz8Oqoa2lSUTtlyTz/tdz2j96c6cmxV0zQi6m27I9a66CyWnPBKNs7/p40c8Q2dyfi2BpRTXQwIxj0ciwo/Zq2Pv4JqmeZx+3CFMDzI2olcGDFoPIel8XS8i65rmg04B3nPMaOfaHtZRQ7m5S8R9/iBa/dhAZW3dEO5OyvUnBhcmZgsT7msU+pqgaflYpHH65iazcXjgRzFiXIOaHO0RotT3Hw8LyajpYUy7bZE1n54w== root@VM-4-8-debian
