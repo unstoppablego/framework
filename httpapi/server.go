@@ -6,19 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"path"
 	"reflect"
 	"strings"
 	"time"
 
 	"github.com/go-session/redis/v3"
 	session "github.com/go-session/session/v3"
-	"github.com/google/uuid"
 	"github.com/rbretecher/go-postman-collection"
 	"gorm.io/gorm"
 
@@ -563,56 +559,9 @@ type Context struct {
 	Tx      *gorm.DB //
 }
 
-func AddFileUpload(path string) {
-	internalServerProvider.InternalMux.HandleFunc(path, UploadFile)
-}
-
-var UploadFilePath = "."
-var UploadFilePermission fs.FileMode = 0777
-
-func UploadFile(w http.ResponseWriter, r *http.Request) {
-
-	var ResponseCentera ResponseDataProvider
-	ResponseCentera.Code = "40000"
-
-	defer func() {
-		data, err := json.Marshal(ResponseCentera)
-		if err != nil {
-			logs.Error(err)
-			return
-		}
-		w.WriteHeader(200)
-		w.Write(data)
-	}()
-
-	if r.Method == "GET" {
-
-	} else {
-
-		r.ParseMultipartForm(32 << 20)
-		file, handler, err := r.FormFile("file")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer file.Close()
-		var filePath = UploadFilePath + "/upload/" + time.Now().Format("2006-01-02") + "/"
-		if err := os.MkdirAll(filePath, UploadFilePermission); !os.IsNotExist(err) {
-			log.Println(err)
-		}
-		uuidWithHyphen := uuid.New()
-		filesuffix := path.Ext(handler.Filename)
-		fileName := uuidWithHyphen.String() + filesuffix
-		f, err := os.OpenFile(filePath+fileName, os.O_WRONLY|os.O_CREATE, UploadFilePermission)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer f.Close()
-		io.Copy(f, file)
-		ResponseCentera.Code = "200"
-	}
-}
+// func AddFileUpload(path string) {
+// 	internalServerProvider.InternalMux.HandleFunc(path, UploadFile)
+// }
 
 //Create Event stream API
 /*
