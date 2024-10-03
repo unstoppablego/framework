@@ -31,9 +31,9 @@ func (dc *DBConfig) DSN() string {
 }
 
 type RedisConfig struct {
-	Addr     string
-	Password string
-	DB       int
+	Addr   string
+	Passwd string
+	DB     int
 }
 
 type HttpConfig struct {

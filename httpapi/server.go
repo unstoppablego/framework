@@ -41,7 +41,7 @@ func (sp *ServerProvider) RunServer(Addr string, xtls *tls.Config) {
 				session.SetStore(redis.NewRedisStore(&redis.Options{
 					Addr:     config.Cfg.Redis[0].Addr,
 					DB:       config.Cfg.Redis[0].DB,
-					Password: config.Cfg.Redis[0].Password,
+					Password: config.Cfg.Redis[0].Passwd,
 				})),
 				session.SetCookieName(config.Cfg.Http.SessionName),
 				session.SetEnableSIDInHTTPHeader(true),
