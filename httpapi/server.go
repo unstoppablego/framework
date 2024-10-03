@@ -171,6 +171,7 @@ func Post[reqModel any](path string, next func(ctx *Context, req reqModel) (data
 		store.Set("sessionstart", true)
 		err = store.Save()
 		if err != nil {
+			logs.Error(err)
 			fmt.Fprint(w, err)
 			return
 		}
