@@ -155,8 +155,10 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		logs.Error(filePath)
 
 		if err := os.MkdirAll(filePath, UploadFilePermission); !os.IsNotExist(err) {
-			logs.Error(err)
-			return
+			if err != nil {
+				logs.Error(err)
+				return
+			}
 		}
 
 		filesuffix := path.Ext(handler.Filename)
