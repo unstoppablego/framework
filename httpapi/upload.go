@@ -17,7 +17,7 @@ import (
 	"github.com/unstoppablego/framework/tool"
 )
 
-var UploadFilePath = config.Cfg.Http.UploadDir
+// var UploadFilePath = config.Cfg.Http.UploadDir
 var UploadFilePermission fs.FileMode = 0777
 
 // 去读url path 通常和 上传的 path 不同一个 且由于 net/http 匹配机制 所以这个路径通常为 /readupfile/
@@ -29,7 +29,7 @@ func RespUpload(urlPath string) func(w http.ResponseWriter, r *http.Request) {
 		// parts := strings.Split(r.URL.Path, "/")
 		getpath = strings.Replace(getpath, urlPath, "", -1)
 
-		filePatha := UploadFilePath + "/upload/" + getpath
+		filePatha := config.Cfg.Http.UploadDir + "/upload/" + getpath
 		logs.Info(filePatha)
 		filename := filepath.Base(filePatha)
 		// 打开文件
@@ -137,7 +137,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		// file, _, err := r.FormFile("file")
 
 		file, handler, err := r.FormFile("file")
-		logs.Info()
+
 		if err != nil {
 			logs.Error(err)
 			return
@@ -224,7 +224,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		ResponseCentera.Code = "200"
 		var BookRespa BookResp
 		BookRespa.Name = copyFileSrcName
-		BookRespa.Url = config.Cfg.Custom["filedomain"] + config.Cfg.Http.UploadUrl + "/" + timePath + fileName
+		BookRespa.Url = config.Cfg.Custom["filedomain"] + config.Cfg.Http.ReadUploadUrl + "/" + timePath + fileName
 		ResponseCentera.Data = BookRespa
 
 		// } else {
